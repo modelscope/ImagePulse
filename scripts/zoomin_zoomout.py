@@ -48,7 +48,7 @@ Here are two images, denoted as image_1 and image_2
 
 Generate a caption (image_1_caption and image_2_caption) according to each image so that another image generation model can generate the image via the caption.
 
-Write image editing instructions (editing_instruction) to edit from image_1 to image_2. Write another image editing instructions (reverse_editing_instruction) to edit from image 2 to image 1.
+Write image editing instructions (editing_instruction) to edit from image_1 to image_2. Write another image editing instructions (reverse_editing_instruction) to edit from image 2 to image 1. Do not say "change back" or "transform back" in the instructions.
 
 Determine whether there are artifacts (e.g., distorted limbs, extra fingers, abnormal composition) in Image 1 and Image 2, denoted by artifacts_in_image_1 and artifacts_in_image_2.
 

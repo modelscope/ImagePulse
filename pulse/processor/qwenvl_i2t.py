@@ -9,7 +9,7 @@ class QwenVLI2T:
         self.model_id = model_id
         self.prompt = prompt
         
-    def __call__(self, images, prompt=None, system_prompt=None):
+    def __call__(self, images=[], prompt=None, system_prompt=None):
         messages = []
         if system_prompt is not None:
             messages.append({"role": "system", "content": system_prompt})
