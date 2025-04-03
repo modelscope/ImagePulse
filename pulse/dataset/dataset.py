@@ -3,7 +3,7 @@ from PIL.Image import Image
 
 
 class ImageDatasetStorage:
-    def __init__(self, target_dir, max_num_files_per_folder=1000, file_extension="png", image_keys=(), metadata_keys=()):
+    def __init__(self, target_dir, max_num_files_per_folder=5000, file_extension="png", image_keys=(), metadata_keys=()):
         os.makedirs(target_dir, exist_ok=True)
         self.target_dir = target_dir
         self.max_num_files_per_folder = max_num_files_per_folder

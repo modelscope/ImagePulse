@@ -1,4 +1,6 @@
 import torch
+import numpy as np
+from PIL import Image
 
 
 class ListSampler:
@@ -26,3 +28,23 @@ class ListPacker:
     def __call__(self, *args, **kwargs):
         ls = list(i for i in args) + list(kwargs[i] for i in kwargs)
         return ls
+
+
+class ImageCropper:
+    def __init__(self):
+        pass
+    
+    def __call__(self, bbox, image):
+        x1, y1, x2, y2 = bbox
+        image = np.array(image)
+        image = image[y1: y2, x1: x2]
+        image = Image.fromarray(image)
+        return image
+    
+    
+class ImageResizer:
+    def __init__(self):
+        pass
+    
+    def __call__(self, image, height=1024, width=1024):
+        return image.resize((width, height))

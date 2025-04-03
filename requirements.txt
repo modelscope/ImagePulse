@@ -1,2 +1,6 @@
 diffsynth
 dashscope
+pandas
+pyarrow
+fastparquet
+opencv-python-headless

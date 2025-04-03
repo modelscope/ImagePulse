@@ -4,7 +4,7 @@ class DataPipeline:
         self.error_log = [0] * len(units)
         self.drop_log = [0] * len(units)
     
-    def __call__(self, data, ignore_errors=False):
+    def __call__(self, data, ignore_errors=False, debug_mode=False):
         for unit_id, unit in enumerate(self.units):
             if ignore_errors:
                 try:
@@ -14,6 +14,11 @@ class DataPipeline:
                     return None
             else:
                 data = unit(data)
+            if debug_mode:
+                print("-" * 200)
+                for key in data:
+                    print(key, data[key])
+                print("-" * 200)
         return data
     
     def report_log(self):
