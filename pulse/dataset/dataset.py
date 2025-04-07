@@ -1,19 +1,40 @@
-import os, time, shutil, json
+import os, time, shutil, json, tarfile
 from PIL.Image import Image
+from modelscope.hub.api import HubApi
 
 
 class ImageDatasetStorage:
-    def __init__(self, target_dir, max_num_files_per_folder=5000, file_extension="png", image_keys=(), metadata_keys=()):
+    def __init__(self, target_dir, max_num_files_per_folder=5000, file_extension="png", image_keys=(), metadata_keys=(), modelscope_access_token=None, modelscope_dataset_id=None):
         os.makedirs(target_dir, exist_ok=True)
         self.target_dir = target_dir
         self.max_num_files_per_folder = max_num_files_per_folder
         self.file_extension = file_extension
         self.image_keys = image_keys
         self.metadata_keys = metadata_keys
+        self.save_dir = None
+        self.modelscope_access_token = modelscope_access_token
+        self.modelscope_dataset_id = modelscope_dataset_id
         self.set_new_dir()
         
         
+    def push_to_hub(self):
+        if self.save_dir is not None and self.modelscope_dataset_id is not None:
+            tar_file = self.save_dir + ".tar.gz"
+            with tarfile.open(tar_file, "w:gz") as tar:
+                tar.add(self.save_dir, arcname=os.path.basename(self.save_dir))
+            api = HubApi()
+            api.login(self.modelscope_access_token)
+            api.upload_file(
+                path_or_fileobj=tar_file,
+                path_in_repo="data/" + os.path.basename(self.save_dir) + ".tar.gz",
+                repo_id=self.modelscope_dataset_id,
+                repo_type="dataset",
+                commit_message=f"Upload {os.path.basename(self.save_dir)}",
+            )
+                    
+        
     def set_new_dir(self):
+        self.push_to_hub()
         timestamp = str(time.time_ns())
         self.save_dir = os.path.join(self.target_dir, timestamp)
         print(f"Dataset will be saved at {self.save_dir}")

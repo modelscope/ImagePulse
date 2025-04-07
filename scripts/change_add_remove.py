@@ -128,6 +128,30 @@ def parse_args():
         default="qwen-vl-max-0809",
         help="QwenVL model id.",
     )
+    parser.add_argument(
+        "--modelscope_access_token",
+        type=str,
+        default=None,
+        help="Modelscope access token",
+    )
+    parser.add_argument(
+        "--modelscope_dataset_id",
+        type=str,
+        default=None,
+        help="Modelscope Dataset ID",
+    )
+    parser.add_argument(
+        "--num_data",
+        type=int,
+        default=100000,
+        help="Number of data samples",
+    )
+    parser.add_argument(
+        "--max_num_files_per_folder",
+        type=int,
+        default=5000,
+        help="Max number of files per folder",
+    )
     args = parser.parse_args()
     return args
     
@@ -159,7 +183,7 @@ def initialize(args):
     preference_model = ImagePreferenceModel("MPS", cache_dir="./models", device="cuda")
     cache = ImageCache(cache_dir=args.cache_dir)
     
-    dataset = DiffusionDB("data/AI-ModelScope/diffusiondb/metadata-large.parquet", shuffle=True)
+    dataset = DiffusionDB("data/AI-ModelScope/diffusiondb/metadata-large.parquet", shuffle=True, num_data=args.num_data)
 
     pipe = DataPipeline(units=[
         DataProcessUnit(
@@ -271,7 +295,10 @@ def initialize(args):
                 metadata_keys=(
                     "editing_instruction", "reverse_editing_instruction", "prompt", "image_1_caption", "image_2_caption",
                     "image_1_preference_score", "image_2_preference_score", "artifacts_in_image_1", "artifacts_in_image_2"
-                )
+                ),
+                modelscope_access_token=args.modelscope_access_token,
+                modelscope_dataset_id=args.modelscope_dataset_id,
+                max_num_files_per_folder=args.max_num_files_per_folder,
             ),
             input_params={
                 "image_1": "image_1", "image_2": "image_2", "mask": "mask",
@@ -280,7 +307,7 @@ def initialize(args):
                 "image_1_preference_score": "image_1_preference_score", "image_2_preference_score": "image_2_preference_score",
                 "artifacts_in_image_1": "artifacts_in_image_1", "artifacts_in_image_2": "artifacts_in_image_2",
             },
-            output_params=("metadata_path")
+            output_params=("metadata_path"),
         )
     ])
     return dataset, pipe
