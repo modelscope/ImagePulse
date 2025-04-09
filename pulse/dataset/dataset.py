@@ -1,6 +1,7 @@
-import os, time, shutil, json, tarfile
-from PIL.Image import Image
+import os, time, shutil, json, tarfile, torchvision, torch
+from PIL import Image
 from modelscope.hub.api import HubApi
+import torchvision.transforms.functional
 
 
 class ImageDatasetStorage:
@@ -44,7 +45,7 @@ class ImageDatasetStorage:
         
     def get_image(self, image):
         timestamp = str(time.time_ns())
-        if isinstance(image, Image):
+        if isinstance(image, Image.Image):
             path = os.path.join(self.save_dir, f"{timestamp}.{self.file_extension}")
             image.save(path)
         elif isinstance(image, str):
@@ -84,3 +85,59 @@ class ImageDatasetStorage:
             self.set_new_dir()
         return path
         
+        
+        
+class ImageDataset:
+    def __init__(self, base_path, crop=False, height=1024, width=1024, max_num=10000000):
+        self.path = []
+        self.search_for_images(base_path)
+        self.crop = crop
+        self.height = height
+        self.width = width
+        self.max_num = max_num
+    
+    def is_image_file(self, file_path):
+        if "." not in file_path:
+            return False
+        file_ext_name = file_path.split(".")[-1]
+        if file_ext_name.lower() in ["jpg", "jpeg", "png", "webp"]:
+            return True
+        return False
+
+    def search_for_images(self, path):
+        if os.path.isfile(path):
+            if self.is_image_file(path):
+                self.path.append(path)
+        else:
+            for file_name in os.listdir(path):
+                sub_path = os.path.join(path, file_name)
+                self.search_for_images(sub_path)
+                
+    def crop_and_resize(self, image):
+        width, height = image.size
+        scale = max(self.width / width, self.height / height)
+        image = torchvision.transforms.functional.resize(
+            image,
+            (round(height*scale), round(width*scale)),
+            interpolation=torchvision.transforms.InterpolationMode.BILINEAR
+        )
+        image = torchvision.transforms.functional.center_crop(
+            image,
+            (self.height, self.width),
+        )
+        return image
+    
+    def __getitem__(self, idx):
+        while True:
+            try:
+                idx = torch.randint(0, len(self.path), size=(1,)).tolist()[0]
+                path = self.path[idx]
+                image = Image.open(path)
+                if self.crop:
+                    image = self.crop_and_resize(image)
+                return image
+            except:
+                continue
+    
+    def __len__(self):
+        return self.max_num

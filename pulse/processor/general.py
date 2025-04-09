@@ -16,8 +16,8 @@ class TextFormater:
     def __init__(self, template):
         self.template = template
         
-    def __call__(self, *args, **kwargs):
-        args = tuple(str(i) for i in args) + tuple(str(kwargs[i]) for i in kwargs)
+    def __call__(self, text_list=[], *args, **kwargs):
+        args = tuple(text_list) + tuple(str(i) for i in args) + tuple(str(kwargs[i]) for i in kwargs)
         return self.template % args
 
 
