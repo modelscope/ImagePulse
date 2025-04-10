@@ -1,15 +1,12 @@
 from pulse.processor.flux_t2i import FLUXT2I
-from pulse.processor.sd_t2i import SDT2I
 from pulse.processor.qwenvl_i2t import QwenVLI2T, QwenJsonParser, QwenBbox2Mask
 from pulse.processor.general import ListSampler, TextFormater, ListPacker, ImageResizer
-from pulse.processor.preference import ImagePreferenceModel
 from pulse.processor.image_cache import ImageCache
 from pulse.processor.face import FaceDataSelector
 from pulse.dataset.dataset import ImageDatasetStorage, ImageDataset
 from pulse.pipeline import DataProcessUnit, DataPipeline
 from pulse.dataset.diffusiondb import DiffusionDB
 from diffsynth import ControlNetConfigUnit, download_models
-from diffsynth.extensions.ImageQualityMetric import download_preference_model
 from modelscope import dataset_snapshot_download
 from tqdm import tqdm
 import argparse, os, io
@@ -90,7 +87,7 @@ Here are some examples:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Dataset generation script: Change, add & remove.")
+    parser = argparse.ArgumentParser(description="Dataset generation script: FaceID.")
     parser.add_argument(
         "--target_dir",
         type=str,
@@ -145,9 +142,9 @@ def parse_args():
     
     
 def initialize(args):
-    # dataset_snapshot_download("AI-ModelScope/diffusiondb", allow_file_pattern=["metadata-large.parquet"], cache_dir="./data")
-    # dataset_snapshot_download("AI-ModelScope/celeb-a-hq_training_untransformed_faces", allow_file_pattern=["*.parquet"], cache_dir="./data")
-    # download_models(["FLUX.1-dev", "InfiniteYou"])
+    dataset_snapshot_download("AI-ModelScope/diffusiondb", allow_file_pattern=["metadata-large.parquet"], cache_dir="./data")
+    dataset_snapshot_download("AI-ModelScope/celeb-a-hq_training_untransformed_faces", allow_file_pattern=["*.parquet"], cache_dir="./data")
+    download_models(["FLUX.1-dev", "InfiniteYou"])
     
     for file_name in os.listdir("data/AI-ModelScope/celeb-a-hq_training_untransformed_faces/data"):
         if file_name.endswith(".parquet"):
@@ -280,7 +277,10 @@ def initialize(args):
                 metadata_keys=(
                     "editing_instruction", "reverse_editing_instruction", "prompt_1", "prompt_2", "image_1_caption", "image_2_caption",
                     "artifacts_in_image_1", "artifacts_in_image_2"
-                )
+                ),
+                modelscope_access_token=args.modelscope_access_token,
+                modelscope_dataset_id=args.modelscope_dataset_id,
+                max_num_files_per_folder=args.max_num_files_per_folder,
             ),
             input_params={
                 "image_face": "image_face", "image_1": "image_1", "image_2": "image_2",

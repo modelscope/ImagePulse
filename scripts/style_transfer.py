@@ -65,7 +65,7 @@ Here are some examples:
 """
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Dataset generation script: Change, add & remove.")
+    parser = argparse.ArgumentParser(description="Dataset generation script: Style Transfer.")
     parser.add_argument(
         "--target_dir",
         type=str,
